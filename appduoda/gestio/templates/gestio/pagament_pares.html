@@ -21,17 +21,39 @@
 
         <div class="form-group">
             <label>Hores a pagar</label>
-            <input type="number" name="hores" id="hores-input" value="1" min="1" required oninput="calculatePrice()">
+            <input type="hidden" name="hores" id="hores-input" value="1">
+            <div id="hores-presets" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-secondary active" data-value="1" onclick="setHores(1)">1h</button>
+                <button type="button" class="btn btn-secondary" data-value="1.5" onclick="setHores(1.5)">1h 30m</button>
+                <button type="button" class="btn btn-secondary" data-value="2" onclick="setHores(2)">2h</button>
+                <button type="button" class="btn btn-secondary" data-value="3" onclick="setHores(3)">3h</button>
+                <button type="button" class="btn btn-secondary" id="custom-hours-btn"
+                    onclick="toggleCustomHours()">Altres...</button>
+            </div>
+            <div id="custom-hours-container" style="display: none; margin-top: 0.75rem;">
+                <input type="number" step="0.5" min="0.5" id="custom-hores" placeholder="Introdueix hores manualment"
+                    oninput="setHores(this.value, true)" style="max-width: 250px;">
+            </div>
         </div>
+
+        <style>
+            #hores-presets .btn.active {
+                background-color: var(--primary);
+                color: white;
+                border: 1px solid var(--primary);
+                box-shadow: 0 4px 6px -1px rgba(30, 58, 138, 0.2);
+            }
+        </style>
 
         <div class="form-group">
             <label>Concepte</label>
             <input type="text" name="concepte" placeholder="Ex: Classes mes d'abril">
         </div>
 
-        <div class="card" style="background-color: #f3f4f6; margin-bottom: 1.5rem;">
+        <div class="card"
+            style="background-color: #f3f4f6; margin-bottom: 2rem; padding: 1.5rem; border: 1px solid var(--border);">
             <p style="margin: 0; font-size: 1.125rem;">Total a pagar: <strong id="total-price">0.00</strong>€</p>
-            <small id="price-detail"></small>
+            <small id="price-detail" style="color: #64748b;"></small>
         </div>
 
         <button type="submit" class="btn btn-gold" style="width: 100%;">Confirmar Pagament</button>
@@ -39,16 +61,44 @@
 </div>
 
 <script>
+    function setHores(valor, isCustom = false) {
+        document.getElementById('hores-input').value = valor;
+
+        // Update active button state
+        const buttons = document.querySelectorAll('#hores-presets .btn');
+        buttons.forEach(btn => {
+            if (!isCustom && btn.getAttribute('data-value') == valor) {
+                btn.classList.add('active');
+            } else if (isCustom && btn.id === 'custom-hours-btn') {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+
+        calculatePrice();
+    }
+
+    function toggleCustomHours() {
+        const container = document.getElementById('custom-hours-container');
+        if (container.style.display === 'none') {
+            container.style.display = 'block';
+            document.getElementById('custom-hores').focus();
+        } else {
+            container.style.display = 'none';
+        }
+    }
+
     function calculatePrice() {
         const select = document.getElementById('alumne-select');
         const hores = document.getElementById('hores-input').value;
         const option = select.options[select.selectedIndex];
         const pricePerHour = parseFloat(option.getAttribute('data-price')) || 0;
 
-        const total = pricePerHour * hores;
+        const total = pricePerHour * parseFloat(hores || 0);
         document.getElementById('total-price').innerText = total.toFixed(2);
 
-        if (pricePerHour > 0) {
+        if (pricePerHour > 0 && hores > 0) {
             document.getElementById('price-detail').innerText = `${pricePerHour}€/hora x ${hores}h`;
         } else {
             document.getElementById('price-detail').innerText = '';

@@ -35,7 +35,7 @@ class AlumneRegistrationForm(forms.ModelForm):
         fields = ['nom', 'cognoms', 'adreca', 'telefon_pare', 'email_pare', 'nom_centre']
 
 class PagamentPareForm(forms.ModelForm):
-    hores = forms.IntegerField(min_value=1, initial=1)
+    hores = forms.DecimalField(min_value=0.5, initial=1, max_digits=5, decimal_places=2)
 
     class Meta:
         model = PagamentAlumne

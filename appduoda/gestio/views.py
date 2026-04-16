@@ -62,7 +62,7 @@ def dashboard_profe_view(request):
 def pagament_pares_view(request):
     if request.method == 'POST':
         alumne_id = request.POST.get('alumne')
-        hores = int(request.POST.get('hores', 1))
+        hores = Decimal(request.POST.get('hores', '1'))
         concepte = request.POST.get('concepte', '')
         
         try:
