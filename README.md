@@ -1,232 +1,89 @@
-
 # 📘 Projecte Escola — Gestió d’Alumnes, Professors i Classes
 
-Aplicació web per gestionar les classes, alumnes i professors d'una escola, construïda amb **Python (Django)** i **MySQL**.  
-Aquest projecte reutilitza una base de dades MySQL existent i ofereix una interfície d'administració completa sense haver de programar fitxers CRUD manuals.
+Aplicació web per gestionar les classes, alumnes i professors d'una escola, construïda amb **Python (Django)** i **MySQL**.
+
+Aquesta aplicació permet portar un control exhaustiu dels pagaments dels alumnes, el registre de les classes realitzades i els pagaments als professors.
 
 ---
 
-## 🚀 Requisits previs
+## 🏗️ Estructura del Projecte
 
-Assegura’t de tenir instal·lats:
+L'aplicació segueix l'arquitectura estàndard de Django:
 
-- Python 3.10 o superior  
-- MySQL Server i una base de dades existent  
-- `pip` i `venv` per gestionar entorns virtuals  
+```text
+appduoda/
+├── appduoda/           # Configuració global del projecte
+│   ├── settings.py     # Configuració (DB, Apps, Middleware)
+│   └── urls.py         # Rutes principals
+├── gestio/              # Aplicació de gestió (Lògica de negoci)
+│   ├── models.py       # Definició de dades (Alumne, Professor, Classe, Pagaments)
+│   ├── admin.py        # Configuració del Panell d'Administració
+│   └── migrations/     # Historial de canvis a la Base de Dades
+├── venv/               # Entorn virtual de Python
+├── manage.py           # Gestor de comandes de Django
+└── .env                # Fitxer de configuració de variables d'entorn
+```
 
 ---
 
-## 🧱 Instal·lació
+## 🚀 Com executar en un servidor
 
-### 1. Crear i activar l’entorn virtual
+### 1. Preparació de l'entorn
+Si encara no ho has fet, clona el repositori i crea l'entorn virtual:
 ```bash
 python3 -m venv venv
 source venv/bin/activate
+pip install django pymysql cryptography
 ```
 
-### 2. Instal·lar dependències
-Com que `mysqlclient` pot donar problemes de compilació, farem servir **PyMySQL**:
+### 2. Configuració de la Base de Dades
+Assegura't de tenir un fitxer `.env` a l'arrel amb les credencials:
+```env
+DB_NAME=appceduoda
+DB_USER=duoda_admin
+DB_PASSWORD=xxxx
+DB_HOST=localhost
+```
 
+### 3. Aplicar canvis i crear usuari
+Executa les migracions per crear les taules a MySQL i crea el teu usuari d'accés:
 ```bash
-pip install django pymysql
-```
-
----
-
-## ⚙️ Configuració del projecte
-
-### Configuració gitignore
-
-Creem un fitxer `.gitingore` dels fitxes i carpetes que NO es pujaran al github:
-
-```
-# Entorn virtual
-venv/
-ENV/
-env/
-
-# Fitxers de compilació Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# Fitxers secrets o de configuració
-.env
-**/*.env
-
-# Fitxers de base de dades locals
-*.sqlite3
-
-# Logs
-*.log
-
-# Fitxers del sistema operatiu
-.DS_Store
-Thumbs.db
-
-# Fitxers temporals d'editor
-.vscode/
-.idea/
-
-```
-
-
-### 1. Crear el projecte i l’app principal
-
-```bash
-django-admin startproject appduoda
-cd appduoda
-python manage.py startapp gestio
-```
-
-Estructura resultant:
-```
-appduoda/
- ├── appduoda/
- │   ├── settings.py
- │   ├── urls.py
- │   └── ...
- ├── gestio/
- │   ├── models.py
- │   ├── admin.py
- │   └── ...
- └── manage.py
-```
-
----
-
-## 🗄️ Connexió amb MySQL
-
-### Crear base de dades
-```
-CREATE DATABASE duoda CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-CREATE USER 'duoda_admin'@'localhost' IDENTIFIED BY 'ceduoda24';
-GRANT ALL PRIVILEGES ON escola.* TO 'duoda_admin'@'localhost';
-
-```
-
-### Connectar amb la base de dades
-
-Edita el fitxer `escola/settings.py` i afegeix la configuració de la teva base de dades:
-
-```python
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'nom_de_la_teva_bd',
-        'USER': 'usuari_mysql',
-        'PASSWORD': 'contrasenya_mysql',
-        'HOST': 'localhost',
-        'PORT': '3306',
-    }
-}
-
-import pymysql
-pymysql.install_as_MySQLdb()
-```
-
----
-
-## 🧩 Generar models des de la base de dades existent
-
-Django pot inspeccionar la base de dades i crear automàticament models Python basats en les teves taules actuals:
-
-```bash
-python manage.py inspectdb > gestio/models.py
-```
-
-> 📝 Després pots editar `models.py` per ajustar noms i relacions.
-
----
-
-## 🧑‍🏫 Activar el panell d’administració
-
-Edita `gestio/admin.py` i registra els models que vulguis administrar:
-
-```python
-from django.contrib import admin
-from .models import *
-
-admin.site.register(Alumnes)
-admin.site.register(Professors)
-admin.site.register(Classes)
-```
-
-> Canvia els noms segons els teus models generats.
-
----
-
-## 🔐 Crear un superusuari
-
-Per accedir al panell d’administració:
-
-```bash
+python manage.py migrate
 python manage.py createsuperuser
 ```
 
-Introdueix usuari, correu i contrasenya.
+### 4. Execució en producció (bàsic)
+Per a proves o entorns interns:
+```bash
+python manage.py runserver 0.0.0.0:8000
+```
+*Nota: Per a producció real es recomana utilitzar Gunicorn + Nginx.*
 
 ---
 
-## ▶️ Executar el servidor
+## 🛠️ Com funciona l'aplicació
 
-Inicia el servidor local de desenvolupament:
+L'aplicació es gestiona íntegrament des del **Panell d'Administració**:
 
-```bash
-python manage.py runserver
-```
+1. **Alumnes i Professors**: Primer registra els teus professors (amb el seu preu/hora) i els teus alumnes.
+2. **Classes**: Cada vegada que es realitzi una classe, registra-la al sistema indicant la data, l'alumne, el professor i el preu que ha de pagar l'alumne.
+3. **Pagaments d'Alumnes**: Registra quan un alumne fa un pagament a l'escola (Efectiu, Bizum o Transferència).
+4. **Pagaments a Professors**: Registra quan l'escola liquida les classes a un professor.
 
-Obre el navegador a:
-
-```
-http://127.0.0.1:8000/admin/
-```
-
-Accedeix amb el teu usuari i ja podràs **veure, afegir i editar** alumnes, professors i classes des d’una interfície web completa.
+### Avantatges:
+- **Filtres**: Pots filtrar ràpidament quines classes ha fet un professor o quins pagaments ha fet un alumne.
+- **Historial**: Tens un registre històric totalment traçable de tota l'activitat econòmica de l'escola.
 
 ---
 
-## ⚙️ Migracions i nous camps
+## ⚙️ Manteniment
 
-Quan afegeixis nous camps als models:
-
-```bash
-python manage.py makemigrations
-python manage.py migrate
-```
-
-Les dades antigues tindran valor `NULL` als nous camps, a menys que indiquis un valor per defecte.
-
----
-
-## 🧪 Comprovar la connexió amb la base de dades
-
-Per obrir una shell SQL dins del teu entorn Django i provar la connexió:
-
-```bash
-python manage.py dbshell
-```
-
-També pots llistar models existents amb:
-
-```bash
-python manage.py showmigrations
-```
-
-Si no hi ha errors, la connexió amb MySQL funciona correctament.
-
----
-
-## 💡 Properes millores
-
-- Afegir vistes pròpies per a professors o alumnes.  
-- Generar informes (PDF, Excel).  
-- Afegir autenticació per rols (professor, administrador).  
-- Millorar el disseny amb Django Templates o React.
+Si afegeixes nous camps als models:
+1. Edita `gestio/models.py`.
+2. Executa `python manage.py makemigrations`.
+3. Executa `python manage.py migrate`.
 
 ---
 
 ## 🧾 Llicència
-
-Projecte intern per a la gestió de classes. Pots adaptar-lo lliurement a les teves necessitats.
+Projecte intern de gestió per a CE Duoda.
