@@ -1,0 +1,285 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}App Duoda{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{% static 'gestio/logo.png' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            /* Navy Blue */
+            --primary-hover: #1e40af;
+            --secondary: #b45309;
+            /* Amber/Gold */
+            --bg: #f8fafc;
+            --text: #0f172a;
+            --white: #ffffff;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        nav {
+            background-color: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 0.75rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 600;
+            margin-left: 1.5rem;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--primary);
+        }
+
+        nav .logo-container {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text);
+        }
+
+        nav .logo-img {
+            height: 40px;
+            margin-right: 0.75rem;
+        }
+
+        nav .logo-text {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: -0.025em;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            flex-grow: 1;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 0.75rem;
+            padding: 2.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
+        }
+
+        h1 {
+            font-size: 1.875rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.025em;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, #1e3a8a 0%, #172554 100%);
+            color: white;
+            border-radius: 1rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .hero img {
+            width: 120px;
+            margin-bottom: 1.5rem;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
+        }
+
+        .hero h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 0;
+        }
+
+        .hero p {
+            font-size: 1.125rem;
+            opacity: 0.9;
+            margin-top: 1rem;
+        }
+
+        .btn,
+        button[type="submit"] {
+            display: inline-block;
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 0.75rem 1.75rem;
+            border: none;
+            border-radius: 0.625rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.95rem;
+            box-shadow: 0 4px 6px -1px rgba(30, 58, 138, 0.2), 0 2px 4px -1px rgba(30, 58, 138, 0.1);
+            border: 1px solid transparent;
+            text-align: center;
+        }
+
+        .btn:hover,
+        button[type="submit"]:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(30, 58, 138, 0.3), 0 4px 6px -2px rgba(30, 58, 138, 0.1);
+        }
+
+        .btn:active,
+        button[type="submit"]:active {
+            transform: translateY(0);
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, var(--secondary) 0%, #92400e 100%);
+            box-shadow: 0 4px 6px -1px rgba(180, 83, 9, 0.2);
+        }
+
+        .btn-gold:hover {
+            background: linear-gradient(135deg, #92400e 0%, #78350f 100%);
+            box-shadow: 0 10px 15px -3px rgba(180, 83, 9, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: #f1f5f9;
+            color: #475569;
+            box-shadow: none;
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background-color: #e2e8f0;
+            color: #1e293b;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: #475569;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.625rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            box-sizing: border-box;
+            background-color: #f8fafc;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+            background-color: white;
+        }
+
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+        }
+
+        .alert-error {
+            background-color: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fee2e2;
+        }
+
+        .alert-success {
+            background-color: #f0fdf4;
+            color: #166534;
+            border: 1px solid #dcfce7;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        th {
+            color: #64748b;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+            border-bottom: 2px solid var(--border);
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        td {
+            padding: 1rem 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <a href="/" class="logo-container">
+            <img src="{% static 'gestio/logo.png' %}" alt="Logo" class="logo-img">
+            <span class="logo-text">Duoda Gestió</span>
+        </a>
+        <div>
+            {% if user.is_authenticated %}
+            <a href="{% url 'dashboard_profe' %}">Panell Profe</a>
+            <a href="{% url 'logout' %}">Sortir</a>
+            {% else %}
+            <a href="{% url 'login' %}">Entrar</a>
+            <a href="{% url 'registro_profe' %}">Registre Profe</a>
+            {% endif %}
+            <a href="{% url 'pagament_pares' %}">Pagament Pares</a>
+            <a href="{% url 'registro_alumne' %}">Registre Alumne</a>
+        </div>
+    </nav>
+    <div class="container">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% block content %}{% endblock %}
+    </div>
+</body>
+
+</html>

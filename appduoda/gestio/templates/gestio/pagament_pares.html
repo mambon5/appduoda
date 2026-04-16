@@ -1,0 +1,58 @@
+{% extends 'gestio/base.html' %}
+{% block title %}Pagament Pares - Duoda Gestió{% endblock %}
+{% block content %}
+<div class="card">
+    <h1>Pagament de Classes</h1>
+    <p>Selecciona l'alumne i les hores que vols pagar.</p>
+
+    <form method="post" id="payment-form">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Selecciona l'Alumne</label>
+            <select name="alumne" id="alumne-select" required onchange="calculatePrice()">
+                <option value="" data-price="0">-- Tria un alumne --</option>
+                {% for alumne in alumnes %}
+                <option value="{{ alumne.id }}" data-price="{{ alumne.preu_per_hora|default:0 }}">
+                    {{ alumne.nom }} {{ alumne.cognoms }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Hores a pagar</label>
+            <input type="number" name="hores" id="hores-input" value="1" min="1" required oninput="calculatePrice()">
+        </div>
+
+        <div class="form-group">
+            <label>Concepte</label>
+            <input type="text" name="concepte" placeholder="Ex: Classes mes d'abril">
+        </div>
+
+        <div class="card" style="background-color: #f3f4f6; margin-bottom: 1.5rem;">
+            <p style="margin: 0; font-size: 1.125rem;">Total a pagar: <strong id="total-price">0.00</strong>€</p>
+            <small id="price-detail"></small>
+        </div>
+
+        <button type="submit" class="btn btn-gold" style="width: 100%;">Confirmar Pagament</button>
+    </form>
+</div>
+
+<script>
+    function calculatePrice() {
+        const select = document.getElementById('alumne-select');
+        const hores = document.getElementById('hores-input').value;
+        const option = select.options[select.selectedIndex];
+        const pricePerHour = parseFloat(option.getAttribute('data-price')) || 0;
+
+        const total = pricePerHour * hores;
+        document.getElementById('total-price').innerText = total.toFixed(2);
+
+        if (pricePerHour > 0) {
+            document.getElementById('price-detail').innerText = `${pricePerHour}€/hora x ${hores}h`;
+        } else {
+            document.getElementById('price-detail').innerText = '';
+        }
+    }
+</script>
+{% endblock %}

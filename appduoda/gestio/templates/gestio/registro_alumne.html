@@ -1,0 +1,35 @@
+{% extends 'gestio/base.html' %}
+{% block title %}Registre Alumne - Duoda Gestió{% endblock %}
+{% block content %}
+<div class="card">
+    <h1>Registre de Nou Alumne</h1>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Nom</label>
+            {{ form.nom }}
+        </div>
+        <div class="form-group">
+            <label>Cognoms</label>
+            {{ form.cognoms }}
+        </div>
+        <div class="form-group">
+            <label>Adreça</label>
+            {{ form.adreca }}
+        </div>
+        <div class="form-group">
+            <label>Telèfon del pare</label>
+            {{ form.telefon_pare }}
+        </div>
+        <div class="form-group">
+            <label>Email del pare</label>
+            {{ form.email_pare }}
+        </div>
+        <div class="form-group">
+            <label>Nom del centre</label>
+            {{ form.nom_centre }}
+        </div>
+        <button type="submit" style="width: 100%;">Registrar Alumne</button>
+    </form>
+</div>
+{% endblock %}

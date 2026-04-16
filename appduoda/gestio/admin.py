@@ -3,14 +3,14 @@ from .models import Alumne, Professor, Classe, PagamentAlumne, PagamentProfessor
 
 @admin.register(Alumne)
 class AlumneAdmin(admin.ModelAdmin):
-    list_display = ('nom', 'cognoms', 'email', 'telefon', 'actiu')
+    list_display = ('nom', 'cognoms', 'preu_per_hora', 'email', 'telefon', 'actiu')
     search_fields = ('nom', 'cognoms', 'email')
     list_filter = ('actiu',)
 
 @admin.register(Professor)
 class ProfessorAdmin(admin.ModelAdmin):
-    list_display = ('nom', 'cognoms', 'email', 'telefon', 'preu_hora')
-    search_fields = ('nom', 'cognoms', 'email')
+    list_display = ('nom', 'cognoms', 'user', 'email', 'telefon', 'preu_hora')
+    search_fields = ('nom', 'cognoms', 'email', 'user__username')
 
 @admin.register(Classe)
 class ClasseAdmin(admin.ModelAdmin):

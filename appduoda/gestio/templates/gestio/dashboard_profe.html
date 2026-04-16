@@ -1,0 +1,68 @@
+{% extends 'gestio/base.html' %}
+{% block title %}Panell Professor - Duoda Gestió{% endblock %}
+{% block content %}
+<div class="card" style="margin-bottom: 2rem;">
+    <h1>Hola, Prof. {{ professor.nom }}</h1>
+    <p>Aquí pots registrar les teves classes realitzades.</p>
+
+    <h3>Nova Classe</h3>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Alumne</label>
+            {{ form.alumne }}
+        </div>
+        <div style="display: flex; gap: 1rem;">
+            <div class="form-group" style="flex: 1;">
+                <label>Data</label>
+                {{ form.data }}
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label>Hora d'inici</label>
+                {{ form.hora_inici }}
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Durada (minuts)</label>
+            {{ form.durada_minuts }}
+        </div>
+        <div class="form-group">
+            <label>Preu Classe (€) <small>(El que paga l'alumne)</small></label>
+            {{ form.preu_classe }}
+        </div>
+        <div class="form-group">
+            <label>Comentaris</label>
+            {{ form.comentaris }}
+        </div>
+        <button type="submit" style="width: 100%;">Registrar Classe</button>
+    </form>
+</div>
+
+<div class="card">
+    <h3>Últimes classes</h3>
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 2px solid var(--border);">
+                <th style="padding: 0.5rem; text-align: left;">Data</th>
+                <th style="padding: 0.5rem; text-align: left;">Alumne</th>
+                <th style="padding: 0.5rem; text-align: left;">Durada</th>
+                <th style="padding: 0.5rem; text-align: left;">Preu</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for classe in classes %}
+            <tr style="border-bottom: 1px solid var(--border);">
+                <td style="padding: 0.5rem;">{{ classe.data }}</td>
+                <td style="padding: 0.5rem;">{{ classe.alumne }}</td>
+                <td style="padding: 0.5rem;">{{ classe.durada_minuts }} min</td>
+                <td style="padding: 0.5rem;">{{ classe.preu_classe }}€</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" style="padding: 1rem; text-align: center;">Encara no has registrat cap classe.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

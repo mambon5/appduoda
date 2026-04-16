@@ -1,10 +1,16 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 class Alumne(models.Model):
     nom = models.CharField(max_length=100)
     cognoms = models.CharField(max_length=100)
     email = models.EmailField(blank=True, null=True)
     telefon = models.CharField(max_length=20, blank=True, null=True)
+    adreca = models.CharField(max_length=255, blank=True, null=True)
+    telefon_pare = models.CharField(max_length=20, blank=True, null=True)
+    email_pare = models.EmailField(blank=True, null=True)
+    nom_centre = models.CharField(max_length=100, blank=True, null=True)
+    preu_per_hora = models.DecimalField(max_digits=5, decimal_places=2, help_text="Preu per hora que paga aquest alumne", null=True, blank=True)
     actiu = models.BooleanField(default=True)
 
     def __str__(self):
@@ -15,6 +21,7 @@ class Alumne(models.Model):
         verbose_name_plural = "Alumnes"
 
 class Professor(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='professor_profile', null=True, blank=True)
     nom = models.CharField(max_length=100)
     cognoms = models.CharField(max_length=100)
     email = models.EmailField(blank=True, null=True)
