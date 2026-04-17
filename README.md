@@ -48,14 +48,21 @@ DB_HOST=localhost
 ### 3. Aplicar canvis i crear usuari
 Executa les migracions per crear les taules a MySQL i crea el teu usuari d'accés:
 ```bash
-python manage.py migrate
-python manage.py createsuperuser
+python3 manage.py migrate
+python3 manage.py createsuperuser
 ```
 
-### 4. Execució en producció (bàsic)
-Per a proves o entorns interns:
+### 4. Execució en desenvolupament
+Per treballar localment:
 ```bash
-python manage.py runserver 0.0.0.0:8000
+python3 manage.py runserver
+```
+Això obrirà l'app a `http://127.0.0.1:8000/`.
+
+### 5. Execució en un servidor (producció bàsica)
+Si vols que l'app sigui accessible des d'altres ordinadors:
+```bash
+python3 manage.py runserver 0.0.0.0:8000
 ```
 *Nota: Per a producció real es recomana utilitzar Gunicorn + Nginx.*
 
@@ -71,6 +78,8 @@ L'aplicació es gestiona íntegrament des del **Panell d'Administració**:
 4. **Pagaments a Professors**: Registra quan l'escola liquida les classes a un professor.
 
 ### Avantatges:
+- **Panell de Professors**: Els professors poden registrar les seves pròpies classes un cop loguejats.
+- **Pagament de Pares**: Pàgina de pagament ràpida amb càlcul automàtic de preu segons l'alumne.
 - **Filtres**: Pots filtrar ràpidament quines classes ha fet un professor o quins pagaments ha fet un alumne.
 - **Historial**: Tens un registre històric totalment traçable de tota l'activitat econòmica de l'escola.
 
