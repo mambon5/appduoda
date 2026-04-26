@@ -2,6 +2,9 @@ from django import forms
 from django.contrib.auth.models import User
 from .models import Professor, Classe, Alumne, PagamentAlumne
 
+class EmailVerificationForm(forms.Form):
+    code = forms.CharField(max_length=6, label="Codi de verificació", widget=forms.TextInput(attrs={'class': 'form-control'}))
+
 class ProfessorRegistrationForm(forms.ModelForm):
     username = forms.CharField(max_length=150)
     password = forms.CharField(widget=forms.PasswordInput)

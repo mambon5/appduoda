@@ -10,4 +10,5 @@ urlpatterns = [
     path('dashboard/', views.dashboard_profe_view, name='dashboard_profe'),
     path('pagament-pares/', views.pagament_pares_view, name='pagament_pares'),
     path('registro-alumne/', views.registro_alumne_view, name='registro_alumne'),
+    path('verificar-email/', views.verify_email_view, name='verify_email'),
 ]
