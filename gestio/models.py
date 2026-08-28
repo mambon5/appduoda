@@ -38,7 +38,7 @@ class Professor(models.Model):
         return f"{self.nom} {self.cognoms}"
 
     class Meta:
-        verbose_name = "Professor"
+        verbose_name = "Professor"  
         verbose_name_plural = "Professors"
 
 class Classe(models.Model):

@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.core.mail import send_mail
  
 from django.db.models import Sum
- from .models import Professor, Classe, Alumne, PagamentAlumne
+from .models import Professor, Classe, Alumne, PagamentAlumne
 from .forms import ProfessorRegistrationForm, ClasseForm, PagamentPareForm, AlumneRegistrationForm, EmailVerificationForm
 from django.contrib.auth.models import User
 from decimal import Decimal
