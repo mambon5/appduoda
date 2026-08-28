@@ -2,7 +2,11 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+<<<<<<< HEAD
 from django.core.mail import send_mail
+=======
+from django.db.models import Sum
+>>>>>>> 36a1ecf (feat: implement monthly financial settlement dashboard for administrators and associate collectors with payments)
 from .models import Professor, Classe, Alumne, PagamentAlumne
 from .forms import ProfessorRegistrationForm, ClasseForm, PagamentPareForm, AlumneRegistrationForm, EmailVerificationForm
 from django.contrib.auth.models import User
@@ -160,10 +164,14 @@ def pagament_pares_view(request):
         try:
             alumne = Alumne.objects.get(id=alumne_id)
             preu_final = (alumne.preu_per_hora or Decimal('0')) * hores
+
+            # Guardem el pagament assignant el recaudador (si està loguejat)
+            recaudador_user = request.user if request.user.is_authenticated else None
             
             # Record the payment
             PagamentAlumne.objects.create(
                 alumne=alumne,
+                recaudador=recaudador_user,  # <-- AFEGIR AQUESTA LÍNIA
                 data=date.today(),
                 import_pagat=preu_final,
                 concepte=f"Paga {hores}h: {concepte}",
@@ -176,6 +184,50 @@ def pagament_pares_view(request):
             
     alumnes = Alumne.objects.filter(actiu=True)
     return render(request, 'gestio/pagament_pares.html', {'alumnes': alumnes})
+
+@login_required
+def liquidacio_view(request):
+    # Procés només permès per als administradors/fundadors (Sergi i Romà)
+    if not request.user.is_staff:
+        messages.error(request, "No tens permís per veure les liquidacions.")
+        return redirect('home')
+
+    # 1. Total diners recollits per cada Recaudador
+    recaudacions = PagamentAlumne.objects.values('recaudador__username').annotate(
+        total_recollit=Sum('import_pagat')
+    )
+
+    # 2. Total diners que li toquen a cada Professor (70% per defecte)
+    professors = Professor.objects.all()
+    resum_professors = []
+    total_ceduoda = Decimal('0.00')
+
+    for prof in professors:
+        classes_prof = Classe.objects.filter(professor=prof)
+        total_generat = classes_prof.aggregate(Sum('preu_classe'))['preu_classe__sum'] or Decimal('0.00')
+        
+        # Càlcul de comissions: 70% Profe, 30% CEDuoda
+        import_profe = total_generat * Decimal('0.70')
+        import_ceduoda = total_generat * Decimal('0.30')
+        total_ceduoda += import_ceduoda
+
+        # Descomptar pagaments ja realitzats al professor si n'hi ha
+        pagat_prof = prof.pagaments_rebuts.aggregate(Sum('import_pagat'))['import_pagat__sum'] or Decimal('0.00')
+        pendent_pagar = import_profe - pagat_prof
+
+        resum_professors.append({
+            'professor': prof,
+            'total_generat': total_generat,
+            'import_profe': import_profe,
+            'pagat_prof': pagat_prof,
+            'pendent_pagar': pendent_pagar,
+        })
+
+    return render(request, 'gestio/liquidacio.html', {
+        'recaudacions': recaudacions,
+        'resum_professors': resum_professors,
+        'total_ceduoda': total_ceduoda,
+    })
 
 def logout_view(request):
     logout(request)

@@ -1,0 +1,96 @@
+{% extends 'gestio/base.html' %}
+{% block title %}Liquidació Mensual - Duoda Gestió{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>Quadre de Liquidació Mensual</h1>
+    <p>Resum de diners recollits per recaudadors, pagaments a professors i comissió de l'acadèmia.</p>
+
+    <!-- SECCIÓ 1: RECAUDADORS -->
+    <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--primary); margin-top: 1.5rem; margin-bottom: 1rem;">
+        1. Diners Recollits per Recaudador
+    </h2>
+    <div style="overflow-x: auto; margin-bottom: 2rem;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Recaudador</th>
+                    <th style="text-align: right;">Total Físic Recollit</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in recaudacions %}
+                <tr>
+                    <td>
+                        <strong>
+                            {% if r.recaudador__username %}
+                            {{ r.recaudador__username }}
+                            {% else %}
+                            Sense assignar / Transferència directa
+                            {% endif %}
+                        </strong>
+                    </td>
+                    <td style="text-align: right; font-weight: 700; font-size: 1.1rem; color: var(--primary);">
+                        {{ r.total_recollit|default:"0.00" }} €
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="2" style="color: #64748b; text-align: center;">No hi ha cap cobrament registrat encara.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- SECCIÓ 2: PROFESSORS -->
+    <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--primary); margin-top: 2rem; margin-bottom: 1rem;">
+        2. Liquidació de Professors (70%)
+    </h2>
+    <div style="overflow-x: auto; margin-bottom: 2rem;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Professor</th>
+                    <th style="text-align: right;">Total Generat</th>
+                    <th style="text-align: right;">70% Profe</th>
+                    <th style="text-align: right;">Ja Pagat</th>
+                    <th style="text-align: right;">Pendent de Pagar</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in resum_professors %}
+                <tr>
+                    <td><strong>{{ item.professor }}</strong></td>
+                    <td style="text-align: right;">{{ item.total_generat }} €</td>
+                    <td style="text-align: right;">{{ item.import_profe }} €</td>
+                    <td style="text-align: right; color: #64748b;">{{ item.pagat_prof }} €</td>
+                    <td style="text-align: right;">
+                        <span
+                            style="font-weight: 700; color: {% if item.pendent_pagar > 0 %}#b91c1c{% else %}#15803d{% endif %};">
+                            {{ item.pendent_pagar }} €
+                        </span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="color: #64748b; text-align: center;">No hi ha dades de classes per a cap
+                        professor.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- SECCIÓ 3: RESUM EMPRESA -->
+    <div class="card"
+        style="background-color: #f3f4f6; margin-top: 2rem; padding: 1.5rem; border: 1px solid var(--border);">
+        <h3 style="margin-top: 0; font-size: 1.125rem; color: var(--text);">Marge Net Acadèmia</h3>
+        <p style="margin: 0; font-size: 1.25rem;">
+            Total CEDuoda (30%): <strong style="color: var(--secondary); font-size: 1.5rem;">{{ total_ceduoda }}
+                €</strong>
+        </p>
+    </div>
+</div>
+{% endblock %}

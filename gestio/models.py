@@ -20,6 +20,12 @@ class Alumne(models.Model):
         verbose_name = "Alumne"
         verbose_name_plural = "Alumnes"
 
+    @property
+    def saldo(self):
+        total_pagat = self.pagaments.aggregate(sum('import_pagat'))['import_pagat__sum'] or 0
+        total_gastat = self.classes.aggregate(sum('preu_classe'))['preu_classe__sum'] or 0
+        return total_pagat - total_gastat
+
 class Professor(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='professor_profile', null=True, blank=True)
     nom = models.CharField(max_length=100)
@@ -51,8 +57,19 @@ class Classe(models.Model):
         verbose_name = "Classe"
         verbose_name_plural = "Classes"
 
+    pct_professor = models.DecimalField(max_digits=5, decimal_places=2, default=70.00, help_text="Percentatge per al profe (ex: 70)")
+
+    @property
+    def import_professor(self):
+        return float(self.preu_classe) * (float(self.pct_professor) / 100.0)
+
+    @property
+    def import_ceduoda(self):
+        return float(self.preu_classe) - self.import_professor
+
 class PagamentAlumne(models.Model):
     alumne = models.ForeignKey(Alumne, on_delete=models.CASCADE, related_name='pagaments')
+    recaudador = models.ForeignKey(User, on_delete=models.PROTECT, related_name='pagaments_recollits', null=True, blank=True)
     data = models.DateField()
     import_pagat = models.DecimalField(max_digits=10, decimal_places=2)
     concepte = models.CharField(max_length=255, blank=True, null=True)
