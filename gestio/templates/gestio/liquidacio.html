@@ -67,10 +67,15 @@
                     <td style="text-align: right;">{{ item.import_profe }} €</td>
                     <td style="text-align: right; color: #64748b;">{{ item.pagat_prof }} €</td>
                     <td style="text-align: right;">
-                        <span
-                            style="font-weight: 700; color: {% if item.pendent_pagar > 0 %}#b91c1c{% else %}#15803d{% endif %};">
+                        {% if item.pendent_pagar > 0 %}
+                        <span style="font-weight: 700; color: #b91c1c;">
                             {{ item.pendent_pagar }} €
                         </span>
+                        {% else %}
+                        <span style="font-weight: 700; color: #15803d;">
+                            {{ item.pendent_pagar }} €
+                        </span>
+                        {% endif %}
                     </td>
                 </tr>
                 {% empty %}
