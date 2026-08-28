@@ -2,12 +2,11 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-<<<<<<< HEAD
+ 
 from django.core.mail import send_mail
-=======
+ 
 from django.db.models import Sum
->>>>>>> 36a1ecf (feat: implement monthly financial settlement dashboard for administrators and associate collectors with payments)
-from .models import Professor, Classe, Alumne, PagamentAlumne
+ from .models import Professor, Classe, Alumne, PagamentAlumne
 from .forms import ProfessorRegistrationForm, ClasseForm, PagamentPareForm, AlumneRegistrationForm, EmailVerificationForm
 from django.contrib.auth.models import User
 from decimal import Decimal
