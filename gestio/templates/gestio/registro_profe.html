@@ -1,44 +1,75 @@
 {% extends 'gestio/base.html' %}
 {% block title %}Registre Professor - Duoda Gestió{% endblock %}
+
 {% block content %}
-<div class="card">
+<div class="card" style="max-width: 650px; margin: 0 auto;">
     <h1>Registre de Nou Professor</h1>
+    <p style="color: #64748b; margin-top: -0.75rem; margin-bottom: 1.5rem;">
+        Crea el teu compte d'accés i el teu perfil docent a Duoda.
+    </p>
+
     <form method="post">
         {% csrf_token %}
         <div class="form-group">
-            <label for="id_username">Nom d'usuari</label>
+            <label for="id_username">Nom d'usuari (per iniciar sessió)</label>
             {{ form.username }}
+            {% if form.username.errors %}<div style="color: #b91c1c; font-size: 0.85rem;">{{ form.username.errors }}</div>{% endif %}
         </div>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+                <label for="id_password">Contrasenya</label>
+                {{ form.password }}
+                {% if form.password.errors %}<div style="color: #b91c1c; font-size: 0.85rem;">{{ form.password.errors }}</div>{% endif %}
+            </div>
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+                <label for="id_confirm_password">Confirma Contrasenya</label>
+                {{ form.confirm_password }}
+                {% if form.confirm_password.errors %}<div style="color: #b91c1c; font-size: 0.85rem;">{{ form.confirm_password.errors }}</div>{% endif %}
+            </div>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid var(--border); margin: 1.5rem 0;">
+
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+                <label for="id_nom">Nom</label>
+                {{ form.nom }}
+                {% if form.nom.errors %}<div style="color: #b91c1c; font-size: 0.85rem;">{{ form.nom.errors }}</div>{% endif %}
+            </div>
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+                <label for="id_cognoms">Cognoms</label>
+                {{ form.cognoms }}
+                {% if form.cognoms.errors %}<div style="color: #b91c1c; font-size: 0.85rem;">{{ form.cognoms.errors }}</div>{% endif %}
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+                <label for="id_email">Email</label>
+                {{ form.email }}
+                {% if form.email.errors %}<div style="color: #b91c1c; font-size: 0.85rem;">{{ form.email.errors }}</div>{% endif %}
+            </div>
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+                <label for="id_telefon">Telèfon</label>
+                {{ form.telefon }}
+                {% if form.telefon.errors %}<div style="color: #b91c1c; font-size: 0.85rem;">{{ form.telefon.errors }}</div>{% endif %}
+            </div>
+        </div>
+
         <div class="form-group">
-            <label for="id_password">Contrasenya</label>
-            {{ form.password }}
+            <label for="id_adreca">Adreça</label>
+            {{ form.adreca }}
+            {% if form.adreca.errors %}<div style="color: #b91c1c; font-size: 0.85rem;">{{ form.adreca.errors }}</div>{% endif %}
         </div>
+
         <div class="form-group">
-            <label for="id_confirm_password">Confirma Contrasenya</label>
-            {{ form.confirm_password }}
+            <label for="id_materies">Matèries que pots impartir</label>
+            {{ form.materies }}
+            <small style="color: #64748b; display: block; margin-top: 0.25rem;">Pots seleccionar-ne múltiples.</small>
+            {% if form.materies.errors %}<div style="color: #b91c1c; font-size: 0.85rem;">{{ form.materies.errors }}</div>{% endif %}
         </div>
-        <hr>
-        <div class="form-group">
-            <label>Nom</label>
-            {{ form.nom }}
-        </div>
-        <div class="form-group">
-            <label>Cognoms</label>
-            {{ form.cognoms }}
-        </div>
-        <div class="form-group">
-            <label>Email</label>
-            {{ form.email }}
-        </div>
-        <div class="form-group">
-            <label>Telèfon</label>
-            {{ form.telefon }}
-        </div>
-        <div class="form-group">
-            <label>Preu per hora (€)</label>
-            {{ form.preu_hora }}
-        </div>
-        <button type="submit">Registrar-se</button>
+
+        <button type="submit" style="width: 100%; margin-top: 1rem;">Registrar-se com a Professor</button>
     </form>
 </div>
 {% endblock %}

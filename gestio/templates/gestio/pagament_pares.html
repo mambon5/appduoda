@@ -1,108 +1,106 @@
 {% extends 'gestio/base.html' %}
-{% block title %}Pagament Pares - Duoda Gestió{% endblock %}
+{% block title %}Pagament de Classes - Duoda Gestió{% endblock %}
+
 {% block content %}
-<div class="card">
-    <h1>Pagament de Classes</h1>
-    <p>Selecciona l'alumne i les hores que vols pagar.</p>
+<div class="card" style="max-width: 700px; margin: 0 auto;">
+    <h1>Pagament de Classes i Packs</h1>
+    <p style="color: #64748b; margin-top: -0.75rem; margin-bottom: 1.5rem;">
+        Registra el pagament d'hores o d'un pack mensual. Pots seleccionar més d'un alumne (per exemple, per a germans que comparteixen pagament).
+    </p>
 
-    <form method="post" id="payment-form">
+    <form method="post" id="pagament-form">
         {% csrf_token %}
-        <div class="form-group">
-            <label>Selecciona l'Alumne</label>
-            <select name="alumne" id="alumne-select" required onchange="calculatePrice()">
-                <option value="" data-price="0">-- Tria un alumne --</option>
-                {% for alumne in alumnes %}
-                <option value="{{ alumne.id }}" data-price="{{ alumne.preu_per_hora|default:0 }}">
-                    {{ alumne.nom }} {{ alumne.cognoms }}
-                </option>
-                {% endfor %}
-            </select>
-        </div>
 
         <div class="form-group">
-            <label>Hores a pagar</label>
-            <input type="hidden" name="hores" id="hores-input" value="1">
-            <div id="hores-presets" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                <button type="button" class="btn btn-secondary active" data-value="1" onclick="setHores(1)">1h</button>
-                <button type="button" class="btn btn-secondary" data-value="1.5" onclick="setHores(1.5)">1h 30m</button>
-                <button type="button" class="btn btn-secondary" data-value="2" onclick="setHores(2)">2h</button>
-                <button type="button" class="btn btn-secondary" data-value="3" onclick="setHores(3)">3h</button>
-                <button type="button" class="btn btn-secondary" id="custom-hours-btn"
-                    onclick="toggleCustomHours()">Altres...</button>
+            <label for="{{ form.alumnes.id_for_label }}">Alumne(s)</label>
+            {{ form.alumnes }}
+            <small style="color: #64748b; display: block; margin-top: 0.25rem;">
+                Pots escriure per cercar i seleccionar un o múltiples alumnes.
+            </small>
+            {% if form.alumnes.errors %}<div style="color: #b91c1c; font-size: 0.85rem;">{{ form.alumnes.errors }}</div>{% endif %}
+        </div>
+
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <div class="form-group" style="flex: 1; min-width: 220px;">
+                <label for="id_tipus_pack">Tipus de Pack / Modalitat</label>
+                {{ form.tipus_pack }}
+                {% if form.tipus_pack.errors %}<div style="color: #b91c1c; font-size: 0.85rem;">{{ form.tipus_pack.errors }}</div>{% endif %}
             </div>
-            <div id="custom-hours-container" style="display: none; margin-top: 0.75rem;">
-                <input type="number" step="0.5" min="0.5" id="custom-hores" placeholder="Introdueix hores manualment"
-                    oninput="setHores(this.value, true)" style="max-width: 250px;">
+
+            <div class="form-group" style="flex: 1; min-width: 150px;">
+                <label for="id_hores_pagades">Total hores pagades</label>
+                {{ form.hores_pagades }}
+                {% if form.hores_pagades.errors %}<div style="color: #b91c1c; font-size: 0.85rem;">{{ form.hores_pagades.errors }}</div>{% endif %}
             </div>
         </div>
 
-        <style>
-            #hores-presets .btn.active {
-                background-color: var(--primary);
-                color: white;
-                border: 1px solid var(--primary);
-                box-shadow: 0 4px 6px -1px rgba(30, 58, 138, 0.2);
-            }
-        </style>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <div class="form-group" style="flex: 1; min-width: 180px;">
+                <label for="id_import_pagat">Import pagat (€)</label>
+                {{ form.import_pagat }}
+                {% if form.import_pagat.errors %}<div style="color: #b91c1c; font-size: 0.85rem;">{{ form.import_pagat.errors }}</div>{% endif %}
+            </div>
+
+            <div class="form-group" style="flex: 1; min-width: 180px;">
+                <label for="{{ form.metode_pagament.id_for_label }}">Mètode de pagament</label>
+                {{ form.metode_pagament }}
+                {% if form.metode_pagament.errors %}<div style="color: #b91c1c; font-size: 0.85rem;">{{ form.metode_pagament.errors }}</div>{% endif %}
+            </div>
+        </div>
 
         <div class="form-group">
-            <label>Concepte</label>
-            <input type="text" name="concepte" placeholder="Ex: Classes mes d'abril">
+            <label for="{{ form.data.id_for_label }}">Data del pagament</label>
+            {{ form.data }}
+            {% if form.data.errors %}<div style="color: #b91c1c; font-size: 0.85rem;">{{ form.data.errors }}</div>{% endif %}
         </div>
 
-        <div class="card"
-            style="background-color: #f3f4f6; margin-bottom: 2rem; padding: 1.5rem; border: 1px solid var(--border);">
-            <p style="margin: 0; font-size: 1.125rem;">Total a pagar: <strong id="total-price">0.00</strong>€</p>
-            <small id="price-detail" style="color: #64748b;"></small>
+        <div class="form-group">
+            <label for="{{ form.concepte.id_for_label }}">Concepte o Observacions (opcional)</label>
+            {{ form.concepte }}
+            {% if form.concepte.errors %}<div style="color: #b91c1c; font-size: 0.85rem;">{{ form.concepte.errors }}</div>{% endif %}
         </div>
 
-        <button type="submit" class="btn btn-gold" style="width: 100%;">Confirmar Pagament</button>
+        <div id="saldo-info" style="display: none; background-color: #f1f5f9; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; border: 1px solid var(--border);">
+            <div style="font-size: 0.9rem; color: #475569;" id="saldo-text"></div>
+        </div>
+
+        <button type="submit" class="btn btn-gold" style="width: 100%; font-size: 1rem; padding: 0.85rem;">
+            Confirmar Pagament
+        </button>
     </form>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
-    function setHores(valor, isCustom = false) {
-        document.getElementById('hores-input').value = valor;
+    document.addEventListener('DOMContentLoaded', function() {
+        const packSelect = document.getElementById('id_tipus_pack');
+        const horesInput = document.getElementById('id_hores_pagades');
+        const importInput = document.getElementById('id_import_pagat');
 
-        // Update active button state
-        const buttons = document.querySelectorAll('#hores-presets .btn');
-        buttons.forEach(btn => {
-            if (!isCustom && btn.getAttribute('data-value') == valor) {
-                btn.classList.add('active');
-            } else if (isCustom && btn.id === 'custom-hours-btn') {
-                btn.classList.add('active');
-            } else {
-                btn.classList.remove('active');
+        // Mapa d'hores segons pack seleccionat
+        const packHores = {
+            '4': 4.00,
+            '8': 8.00,
+            '12': 12.00
+        };
+
+        function onPackChange() {
+            const selected = packSelect.value;
+            if (packHores[selected] !== undefined) {
+                horesInput.value = packHores[selected].toFixed(2);
+            } else if (selected === 'ALTRES') {
+                horesInput.focus();
             }
-        });
-
-        calculatePrice();
-    }
-
-    function toggleCustomHours() {
-        const container = document.getElementById('custom-hours-container');
-        if (container.style.display === 'none') {
-            container.style.display = 'block';
-            document.getElementById('custom-hores').focus();
-        } else {
-            container.style.display = 'none';
         }
-    }
 
-    function calculatePrice() {
-        const select = document.getElementById('alumne-select');
-        const hores = document.getElementById('hores-input').value;
-        const option = select.options[select.selectedIndex];
-        const pricePerHour = parseFloat(option.getAttribute('data-price')) || 0;
-
-        const total = pricePerHour * parseFloat(hores || 0);
-        document.getElementById('total-price').innerText = total.toFixed(2);
-
-        if (pricePerHour > 0 && hores > 0) {
-            document.getElementById('price-detail').innerText = `${pricePerHour}€/hora x ${hores}h`;
-        } else {
-            document.getElementById('price-detail').innerText = '';
+        if (packSelect && horesInput) {
+            packSelect.addEventListener('change', onPackChange);
+            // Si és nou formulari i està inicialitzat a '4'
+            if (packSelect.value && !horesInput.value) {
+                onPackChange();
+            }
         }
-    }
+    });
 </script>
 {% endblock %}

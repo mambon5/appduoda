@@ -96,3 +96,12 @@ Si afegeixes nous camps als models:
 
 ## 🧾 Llicència
 Projecte intern de gestió per a CE Duoda.
+
+
+# 1. Engegar MySQL (si està aturat)
+sudo systemctl start mysql
+
+python manage.py migrate
+
+# 3. Crear les matèries inicials (Matemàtiques, Física, Química, Anglès, etc.)
+python manage.py crear_materies

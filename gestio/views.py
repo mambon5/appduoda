@@ -2,12 +2,10 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
- 
 from django.core.mail import send_mail
- 
-from django.db.models import Sum
-from .models import Professor, Classe, Alumne, PagamentAlumne
-from .forms import ProfessorRegistrationForm, ClasseForm, PagamentPareForm, AlumneRegistrationForm, EmailVerificationForm
+from django.db.models import Sum, QuerySet
+from .models import Professor, Classe, Alumne, PagamentAlumne, Materia
+from .forms import ProfessorRegistrationForm, ClasseForm, PagamentAlumneForm, AlumneRegistrationForm, EmailVerificationForm
 from django.contrib.auth.models import User
 from decimal import Decimal
 from datetime import date
@@ -23,12 +21,14 @@ def serialize_data(cleaned_data):
             serialized[k] = str(v)
         elif isinstance(v, date):
             serialized[k] = v.isoformat()
+        elif isinstance(v, QuerySet) or (hasattr(v, '__iter__') and not isinstance(v, (str, bytes, dict))):
+            serialized[k] = [item.pk if hasattr(item, 'pk') else item for item in v]
         else:
             serialized[k] = v
     return serialized
 
 def send_verification_email(email, code):
-    subject = "Codi de verificació per al registre"
+    subject = "Codi de verificació per al registre - Duoda"
     message = f"El teu codi de verificació és: {code}"
     send_mail(subject, message, None, [email], fail_silently=False)
 
@@ -46,7 +46,8 @@ def registro_profe_view(request):
                 messages.info(request, "T'hem enviat un correu amb el codi de verificació.")
                 return redirect('verify_email')
             except Exception as e:
-                messages.error(request, "Error enviant el correu electrònic.")
+                # Si falla l'enviament per configuració SMTP local, mostrem avís o procedim
+                messages.error(request, f"Error enviant el correu electrònic: {e}")
     else:
         form = ProfessorRegistrationForm()
     return render(request, 'gestio/registro_profe.html', {'form': form})
@@ -60,12 +61,19 @@ def registro_alumne_view(request):
             request.session['verification_code'] = code
             request.session['registration_type'] = 'alumne'
             
-            try:
-                send_verification_email(form.cleaned_data['email_pare'], code)
-                messages.info(request, "T'hem enviat un correu amb el codi de verificació al email del pare/mare.")
-                return redirect('verify_email')
-            except Exception as e:
-                messages.error(request, "Error enviant el correu electrònic.")
+            email_desti = form.cleaned_data.get('email_pare') or form.cleaned_data.get('email')
+            if email_desti:
+                try:
+                    send_verification_email(email_desti, code)
+                    messages.info(request, "T'hem enviat un correu amb el codi de verificació al email del pare/mare.")
+                    return redirect('verify_email')
+                except Exception as e:
+                    messages.error(request, f"Error enviant el correu electrònic: {e}")
+            else:
+                # Si no s'ha introduït correu, es crea directament
+                alumne = form.save()
+                messages.success(request, f"Alumne {alumne.nom} registrat correctament!")
+                return redirect('home')
     else:
         form = AlumneRegistrationForm()
     return render(request, 'gestio/registro_alumne.html', {'form': form})
@@ -84,38 +92,44 @@ def verify_email_view(request):
         if form.is_valid():
             if form.cleaned_data['code'] == verification_code:
                 if registration_type == 'profe':
-                    # Deserialitzar data per crear el Profe
                     user = User.objects.create_user(
                         username=registration_data['username'],
                         password=registration_data['password'],
-                        email=registration_data['email']
+                        email=registration_data.get('email', '')
                     )
-                    professor = Professor(
+                    professor = Professor.objects.create(
                         user=user,
                         nom=registration_data['nom'],
                         cognoms=registration_data['cognoms'],
-                        email=registration_data['email'],
-                        telefon=registration_data['telefon'],
-                        preu_hora=Decimal(registration_data['preu_hora']) if registration_data.get('preu_hora') else None
+                        email=registration_data.get('email', ''),
+                        telefon=registration_data.get('telefon', ''),
+                        adreca=registration_data.get('adreca', ''),
                     )
-                    professor.save()
+                    if registration_data.get('materies'):
+                        professor.materies.set(registration_data['materies'])
+
                     login(request, user)
-                    messages.success(request, "Registre completat amb èxit!")
+                    messages.success(request, "Registre de professor completat amb èxit!")
                     del request.session['registration_data']
                     del request.session['verification_code']
                     del request.session['registration_type']
                     return redirect('dashboard_profe')
                 
                 elif registration_type == 'alumne':
-                    alumne = Alumne(
+                    alumne = Alumne.objects.create(
                         nom=registration_data['nom'],
                         cognoms=registration_data['cognoms'],
-                        adreca=registration_data.get('adreca', ''),
+                        curs=registration_data.get('curs', 'ESO'),
+                        telefon=registration_data.get('telefon', ''),
+                        nom_pare=registration_data.get('nom_pare', ''),
                         telefon_pare=registration_data.get('telefon_pare', ''),
                         email_pare=registration_data.get('email_pare', ''),
+                        adreca=registration_data.get('adreca', ''),
                         nom_centre=registration_data.get('nom_centre', '')
                     )
-                    alumne.save()
+                    if registration_data.get('materies'):
+                        alumne.materies.set(registration_data['materies'])
+
                     messages.success(request, "Alumne registrat correctament!")
                     del request.session['registration_data']
                     del request.session['verification_code']
@@ -142,12 +156,13 @@ def dashboard_profe_view(request):
             classe = form.save(commit=False)
             classe.professor = professor
             classe.save()
-            messages.success(request, "Classe registrada correctament.")
+            form.save_m2m()
+            messages.success(request, f"Classe registrada correctament. Cobrament calculat: {classe.cost_professor}€ ({classe.alumnes.count()} alumnes).")
             return redirect('dashboard_profe')
     else:
         form = ClasseForm()
 
-    classes = Classe.objects.filter(professor=professor).order_by('-data')
+    classes = Classe.objects.filter(professor=professor).prefetch_related('alumnes').order_by('-data', '-hora_inici')
     return render(request, 'gestio/dashboard_profe.html', {
         'form': form,
         'professor': professor,
@@ -156,37 +171,27 @@ def dashboard_profe_view(request):
 
 def pagament_pares_view(request):
     if request.method == 'POST':
-        alumne_id = request.POST.get('alumne')
-        hores = Decimal(request.POST.get('hores', '1'))
-        concepte = request.POST.get('concepte', '')
-        
-        try:
-            alumne = Alumne.objects.get(id=alumne_id)
-            preu_final = (alumne.preu_per_hora or Decimal('0')) * hores
-
-            # Guardem el pagament assignant el recaudador (si està loguejat)
-            recaudador_user = request.user if request.user.is_authenticated else None
-            
-            # Record the payment
-            PagamentAlumne.objects.create(
-                alumne=alumne,
-                recaudador=recaudador_user,  # <-- AFEGIR AQUESTA LÍNIA
-                data=date.today(),
-                import_pagat=preu_final,
-                concepte=f"Paga {hores}h: {concepte}",
-                metode_pagament='Transferencia' # Default for now
-            )
-            messages.success(request, f"Gràcies! S'ha registrat un pagament de {preu_final}€ per a {alumne.nom}.")
+        form = PagamentAlumneForm(request.POST)
+        if form.is_valid():
+            pagament = form.save(commit=False)
+            if request.user.is_authenticated:
+                pagament.recaudador = request.user
+            pagament.save()
+            form.save_m2m()
+            alumnes_noms = ", ".join([a.nom for a in pagament.alumnes.all()])
+            messages.success(request, f"Gràcies! Pagament de {pagament.import_pagat}€ ({pagament.hores_pagades}h) registrat correctament per a: {alumnes_noms}.")
             return redirect('home')
-        except Alumne.DoesNotExist:
-            messages.error(request, "Alumne no trobat.")
-            
+    else:
+        form = PagamentAlumneForm()
+
     alumnes = Alumne.objects.filter(actiu=True)
-    return render(request, 'gestio/pagament_pares.html', {'alumnes': alumnes})
+    return render(request, 'gestio/pagament_pares.html', {
+        'form': form,
+        'alumnes': alumnes
+    })
 
 @login_required
 def liquidacio_view(request):
-    # Procés només permès per als administradors/fundadors (Sergi i Romà)
     if not request.user.is_staff:
         messages.error(request, "No tens permís per veure les liquidacions.")
         return redirect('home')
@@ -195,37 +200,38 @@ def liquidacio_view(request):
     recaudacions = PagamentAlumne.objects.values('recaudador__username').annotate(
         total_recollit=Sum('import_pagat')
     )
+    total_recaptat = PagamentAlumne.objects.aggregate(Sum('import_pagat'))['import_pagat__sum'] or Decimal('0.00')
 
-    # 2. Total diners que li toquen a cada Professor (70% per defecte)
+    # 2. Total diners que corresponen a cada Professor segons assistents a cada classe
     professors = Professor.objects.all()
     resum_professors = []
-    total_ceduoda = Decimal('0.00')
+    total_cost_professors = Decimal('0.00')
 
     for prof in professors:
-        classes_prof = Classe.objects.filter(professor=prof)
-        total_generat = classes_prof.aggregate(Sum('preu_classe'))['preu_classe__sum'] or Decimal('0.00')
-        
-        # Càlcul de comissions: 70% Profe, 30% CEDuoda
-        import_profe = total_generat * Decimal('0.70')
-        import_ceduoda = total_generat * Decimal('0.30')
-        total_ceduoda += import_ceduoda
+        classes_prof = Classe.objects.filter(professor=prof).prefetch_related('alumnes')
+        cost_total = Decimal(str(sum(c.cost_professor for c in classes_prof)))
+        total_cost_professors += cost_total
 
-        # Descomptar pagaments ja realitzats al professor si n'hi ha
+        # Pagaments ja fets al professor
         pagat_prof = prof.pagaments_rebuts.aggregate(Sum('import_pagat'))['import_pagat__sum'] or Decimal('0.00')
-        pendent_pagar = import_profe - pagat_prof
+        pendent_pagar = cost_total - pagat_prof
 
         resum_professors.append({
             'professor': prof,
-            'total_generat': total_generat,
-            'import_profe': import_profe,
+            'num_classes': classes_prof.count(),
+            'import_profe': cost_total,
             'pagat_prof': pagat_prof,
             'pendent_pagar': pendent_pagar,
         })
 
+    marge_net = total_recaptat - total_cost_professors
+
     return render(request, 'gestio/liquidacio.html', {
         'recaudacions': recaudacions,
         'resum_professors': resum_professors,
-        'total_ceduoda': total_ceduoda,
+        'total_recaptat': total_recaptat,
+        'total_cost_professors': total_cost_professors,
+        'marge_net': marge_net,
     })
 
 def logout_view(request):

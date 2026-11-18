@@ -1,35 +1,83 @@
 {% extends 'gestio/base.html' %}
 {% block title %}Registre Alumne - Duoda Gestió{% endblock %}
+
 {% block content %}
-<div class="card">
+<div class="card" style="max-width: 700px; margin: 0 auto;">
     <h1>Registre de Nou Alumne</h1>
+    <p style="color: #64748b; margin-top: -0.75rem; margin-bottom: 1.5rem;">
+        Introdueix les dades de l'alumne, el seu curs escolar i les matèries que necessita reforçar.
+    </p>
+
     <form method="post">
         {% csrf_token %}
-        <div class="form-group">
-            <label>Nom</label>
-            {{ form.nom }}
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+                <label for="{{ form.nom.id_for_label }}">Nom de l'alumne</label>
+                {{ form.nom }}
+                {% if form.nom.errors %}<div style="color: #b91c1c; font-size: 0.85rem;">{{ form.nom.errors }}</div>{% endif %}
+            </div>
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+                <label for="{{ form.cognoms.id_for_label }}">Cognoms</label>
+                {{ form.cognoms }}
+                {% if form.cognoms.errors %}<div style="color: #b91c1c; font-size: 0.85rem;">{{ form.cognoms.errors }}</div>{% endif %}
+            </div>
         </div>
-        <div class="form-group">
-            <label>Cognoms</label>
-            {{ form.cognoms }}
+
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+                <label for="{{ form.curs.id_for_label }}">Curs Escolar</label>
+                {{ form.curs }}
+                {% if form.curs.errors %}<div style="color: #b91c1c; font-size: 0.85rem;">{{ form.curs.errors }}</div>{% endif %}
+            </div>
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+                <label for="{{ form.telefon.id_for_label }}">Telèfon alumne (opcional)</label>
+                {{ form.telefon }}
+                {% if form.telefon.errors %}<div style="color: #b91c1c; font-size: 0.85rem;">{{ form.telefon.errors }}</div>{% endif %}
+            </div>
         </div>
+
         <div class="form-group">
-            <label>Adreça</label>
-            {{ form.adreca }}
+            <label for="{{ form.materies.id_for_label }}">Matèries a reforçar</label>
+            {{ form.materies }}
+            <small style="color: #64748b; display: block; margin-top: 0.25rem;">Pots triar diverses matèries.</small>
+            {% if form.materies.errors %}<div style="color: #b91c1c; font-size: 0.85rem;">{{ form.materies.errors }}</div>{% endif %}
         </div>
-        <div class="form-group">
-            <label>Telèfon del pare</label>
-            {{ form.telefon_pare }}
+
+        <hr style="border: 0; border-top: 1px solid var(--border); margin: 1.5rem 0;">
+
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+                <label for="{{ form.nom_pare.id_for_label }}">Nom del pare/mare/tutor</label>
+                {{ form.nom_pare }}
+                {% if form.nom_pare.errors %}<div style="color: #b91c1c; font-size: 0.85rem;">{{ form.nom_pare.errors }}</div>{% endif %}
+            </div>
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+                <label for="{{ form.telefon_pare.id_for_label }}">Telèfon pare/mare</label>
+                {{ form.telefon_pare }}
+                {% if form.telefon_pare.errors %}<div style="color: #b91c1c; font-size: 0.85rem;">{{ form.telefon_pare.errors }}</div>{% endif %}
+            </div>
         </div>
+
         <div class="form-group">
-            <label>Email del pare</label>
+            <label for="{{ form.email_pare.id_for_label }}">Email pare/mare (per a notificacions)</label>
             {{ form.email_pare }}
+            {% if form.email_pare.errors %}<div style="color: #b91c1c; font-size: 0.85rem;">{{ form.email_pare.errors }}</div>{% endif %}
         </div>
-        <div class="form-group">
-            <label>Nom del centre</label>
-            {{ form.nom_centre }}
+
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+                <label for="{{ form.nom_centre.id_for_label }}">Escola / Institut / Centre</label>
+                {{ form.nom_centre }}
+                {% if form.nom_centre.errors %}<div style="color: #b91c1c; font-size: 0.85rem;">{{ form.nom_centre.errors }}</div>{% endif %}
+            </div>
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+                <label for="{{ form.adreca.id_for_label }}">Adreça</label>
+                {{ form.adreca }}
+                {% if form.adreca.errors %}<div style="color: #b91c1c; font-size: 0.85rem;">{{ form.adreca.errors }}</div>{% endif %}
+            </div>
         </div>
-        <button type="submit" style="width: 100%;">Registrar Alumne</button>
+
+        <button type="submit" style="width: 100%; margin-top: 1rem;">Registrar Alumne</button>
     </form>
 </div>
 {% endblock %}
